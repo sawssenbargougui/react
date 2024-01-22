@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
 
+import React, { useState } from 'react';
 function Todo(props) {
   const [isEditing, setEditing] = useState(false);
   const [newName, setNewName] = useState(""); 
