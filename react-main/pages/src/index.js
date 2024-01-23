@@ -4,9 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Link, Outlet } from 'react-rout
 import Home from './pages/Home';
 import Survey from './pages/Survey';
 import Header from './components/Header';
-import ClientForm from './components/ClientForm';
-import FreelanceForm from './components/FreelanceForm';
-import Header from './components/Error'
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
