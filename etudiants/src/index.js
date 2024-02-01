@@ -12,6 +12,7 @@ import RechercheA from './RechercheA';
 import Header from './Header';
 import Supprimer2 from './Supprimer2';
 import Editer from './Editer';
+
 import Form from './Form';
 import reportWebVitals from './reportWebVitals';
 
@@ -19,7 +20,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <Router>
-    <Header />
+    
     <Route path="/" element={<App />} />
     <Route path="/recherche/:id" element={<Recherche />} />
     <Route path="/form" element={<Form />} />
@@ -28,14 +29,12 @@ root.render(
     <Route path="/ajouter" element={<Ajouter />} />
     <Route path="/supprimer" element={<Supprimer />} />
     <Route path="/recherchea" element={<RechercheA />} />
-    
- 
-    
     {/* Route pour afficher un Supprimer2 individuel */}
     <Route path="/supprimer2/:id" element={<Supprimer2 />} />
-
     <Route path="/editer/:id" element={<Editer />} />
+    <Header />
   </Router>,
 );
 
 reportWebVitals(console.log);
+

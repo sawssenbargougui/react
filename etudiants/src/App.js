@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
-import { Link } from 'react-router-dom';
+
 
 const ListeEtudiantsPdf = ({ data }) => {
   const printPdf = () => {
@@ -31,23 +31,18 @@ const ListeEtudiantsPdf = ({ data }) => {
             <th scope="col">prenom</th>
             <th scope="col">nom</th>
             <th scope="col">ville</th>
-            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
-          {data.map(item => (
-            <tr key={item.id}>
-              <th scope="row">{item.id}</th>
-              <td>{item.lastname}</td>
-              <td>{item.firstname}</td>
-              <td>{item.ville}</td>
-              <td>
-                <Link to={`editer/${item.id}`}>Editer</Link>
-                <Link to={`supprimer2/${item.id}`}>Supprimer2</Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+  {data.map(item => (
+    <tr key={item.id}>
+      <th scope="row">{item.id}</th>
+      <td>{item.lastname}</td>
+      <td>{item.firstname}</td>
+      <td>{item.ville}</td>
+    </tr>
+  ))}
+</tbody>
       </table>
       <button className="btn btn-primary" onClick={printPdf}>
         Générer PDF
@@ -60,7 +55,7 @@ function App() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch('https://3002-sawssenbargougui-react-2krul2s6y1f.ws-eu107.gitpod.io//etudiants')
+    fetch('https://3002-sawssenbargougui-react-2krul2s6y1f.ws-eu107.gitpod.io/etudiants')
       .then(response => response.json())
       .then(data => setData(data))
       .catch(error => console.error('Erreur :', error));

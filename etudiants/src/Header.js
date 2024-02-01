@@ -23,21 +23,29 @@ const Header = () => {
             <Nav.Link as={Link} to="/supprimer">Supprimer</Nav.Link>
             <Nav.Link as={Link} to="/recherchea">RechercheA</Nav.Link>
           </Nav>
-          <Form className="d-flex" onSubmit={handleSearchSubmit}>
-            <FormControl
-              type="search"
-              placeholder="Rechercher"
-              className="mr-2"
-              aria-label="Rechercher"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Button variant="outline-success" type="submit">Rechercher</Button>
-          </Form>
         </Navbar.Collapse>
+
+        {/* Liens vers Editer et Supprimer2 à l'extérieur du formulaire */}
+        <Nav>
+        <Nav.Link as={Link} to="/editer">Editer</Nav.Link>
+
+{/* Ajoutez un ID spécifique pour Supprimer2 */}
+<Nav.Link as={Link} to="/supprimer2">Supprimer2</Nav.Link>        </Nav>
+
+        <Form className="d-flex" onSubmit={handleSearchSubmit}>
+          <FormControl
+            type="search"
+            placeholder="Rechercher"
+            className="mr-2"
+            aria-label="Rechercher"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button variant="outline-success" type="submit">Rechercher</Button>
+        </Form>
       </Container>
     </Navbar>
   );
-}
+};
 
 export default Header;

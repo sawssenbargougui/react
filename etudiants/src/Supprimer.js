@@ -11,7 +11,7 @@ function Supprimer() {
 
   const handleSubmit = event => {
     event.preventDefault();
-    fetch(`https://3002-sawssenbargougui-react-2krul2s6y1f.ws-eu107.gitpod.io//etudiants`, {
+    fetch(`https://3002-sawssenbargougui-react-2krul2s6y1f.ws-eu107.gitpod.io///etudiants`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

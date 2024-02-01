@@ -12,7 +12,7 @@ function Supprimer2() {
       // ...
 
       // Exemple de requête DELETE
-      fetch(`https://3002-sawssenbargougui-react-2krul2s6y1f.ws-eu107.gitpod.io//etudiants/${id}`, {
+      fetch(`https://3002-sawssenbargougui-react-2krul2s6y1f.ws-eu107.gitpod.io/etudiants/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
