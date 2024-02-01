@@ -1,58 +1,119 @@
 const express = require('express');
+const cors = require('cors');
+const sqlite3 = require('sqlite3').verbose();
 const app = express();
-const port = 3001;
+const bodyParser = require('body-parser');
 
-// Définition de l'en-tête pour permettre l'accès depuis n'importe où
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  next();
-});
+app.use(cors()); // Utilisation du middleware cors pour autoriser les requêtes CORS
 
-const etudiants = [
-  { id: 1, nom: 'John Doe' },
-  { id: 2, nom: 'Jane Smith' },
-  { id: 3, nom: 'Bob Johnson' }
-];
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+const port = 3002;
 
+// Configuration de la connexion à la base de données
+const db = new sqlite3.Database('./test.db');
+
+// Création de la table si elle n'existe pas
+const createTableQuery = `
+  CREATE TABLE IF NOT EXISTS etudiants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lastname TEXT,
+    firstname TEXT
+  )
+`;
+db.run(createTableQuery);
+
+// Récupération des données de la base de données
 app.get('/etudiants', (req, res) => {
-  res.json(etudiants);
+  const sql = 'SELECT * FROM etudiants';
+  db.all(sql, (error, rows) => {
+    if (error) {
+      console.error('Error fetching data', error);
+      res.status(500).send('Error fetching data');
+    } else {
+      res.json(rows);
+    }
+  });
 });
 
+// Récupération d'un étudiant par ID
 app.get('/etudiants/:id', (req, res) => {
-  const etudiantId = parseInt(req.params.id);
-  const etudiant = etudiants.find(etudiant => etudiant.id === etudiantId);
-
-  if (etudiant) {
-    res.json(etudiant);
-  } else {
-    res.status(404).json({ message: 'Etudiant non trouvé' });
-  }
+  const id = req.params.id;
+  const sql = 'SELECT * FROM etudiants WHERE id = ?';
+  db.get(sql, [id], (error, row) => {
+    if (error) {
+      console.error('Error fetching data', error);
+      res.status(500).send('Error fetching data');
+    } else {
+      if (!row) {
+        res.json({ lastname: "Etudiant n'existe pas" });
+      } else {
+        res.json(row);
+      }
+    }
+  });
 });
 
-const classes = [
-  { id: 'Ginf21', libelle: 'genie informatique21 cours de jour' },
-  { id: 'Ginf22', libelle: 'genie informatique22 cours de soir'  },
-  { id: 'Ginf23', libelle: 'genie informatique23 cours de soir'  }
-];
-
-app.get('/classes', (req, res) => {
-  res.json(classes);
+// Mise à jour d'un étudiant par ID
+app.put('/etudiants/:id', (req, res) => {
+  const id = req.params.id;
+  const nom = req.body.lastname;
+  const prenom = req.body.firstname;
+  const sql = 'UPDATE etudiants SET lastname = ?, firstname = ? WHERE id = ?';
+  db.run(sql, [nom, prenom, id], function (err) {
+    if (err) {
+      console.error('Error updating student', err);
+      res.status(500).send('Error updating student');
+    } else {
+      res.send(`Student with ID ${id} updated successfully`);
+    }
+  });
 });
-
-app.get('/classes/:id', (req, res) => {
-  const classeId = req.params.id;
-  const classe = classes.find(classe => classe.id === classeId);
-
-  if (classe) {
-    res.json(classe);
-  } else {
-    res.status(404).json({ message: 'Classe non trouvée' });
-  }
+// ajout 
+app.post('/etudiants', (req, res) => {
+  const nom = req.body.lastname;
+  const prenom = req.body.firstname;
+  const ville = req.body.ville || 'sfax';
+  const sql = 'INSERT INTO etudiants(lastname,firstname,ville) VALUES (?,?,?)';
+  db.run(sql, [nom, prenom,ville], function (err) {
+    if (err) {
+      console.error('Error updating student', err);
+      res.status(500).send('Error updating student');
+    } else {
+      res.send(`Student add successfully`);
+    }
+  });
 });
-
+// delete  
+app.delete('/etudiants', (req, res) => {
+  const id = req.body.id;
+  
+  const sql = 'delete from etudiants wehere id= ?';
+  db.run(sql, [nom, prenom], function (err) {
+    if (err) {
+      console.error('Error updating student', err);
+      res.status(500).send('Error updating student');
+    } else {
+      res.send(`Student add successfully`);
+    }
+  });
+});
+// recherche 
+app.get('/recherchea/:nom/:ville', (req, res) => {
+  const nom = req.body.lastname;
+  const prenom = req.body.nom + "%";
+  const ville = req.body.ville  + "%";
+  const sql = 'select* from etudiants where(nom like ?and (ville like ?)';
+  db.run(sql, [nom, prenom,ville], function (err) {
+    if (err) {
+      console.error('Error updating student', err);
+      res.status(500).send('Error updating student');
+    } else {
+      res.send(`Student add successfully`);
+    }
+  });
+});
+//Démarrage du serveur
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
