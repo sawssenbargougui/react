@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const Modele=require('./Modele')
 const bodyParser = require('body-parser');
-const { Sequelize, DataTypes } = require('sequelize');
+
 
 const sequelize = new Sequelize({
   dialect: 'sqlite',
