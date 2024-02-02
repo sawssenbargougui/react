@@ -1,144 +1,108 @@
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
-const app = express();
 const bodyParser = require('body-parser');
+const { Sequelize, DataTypes } = require('sequelize');
+
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: './test.db'
+});
+
+const etudiants = sequelize.define('etudiants', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  lastname: { 
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  firstname: { 
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  
+},
+{ 
+  tableName: "etudiants", 
+  timestamps: false 
+});
+
+sequelize.sync().then(() => {
+  console.log('La synchronisation avec la base de données est faite !');
+}).catch((err) => {
+  console.error('Erreur lors de la synchronisation avec la base de données :', err);
+});
+
+const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-const port = 3002;
-
-const db = new sqlite3.Database('./test.db');
-const createTableQuery = `
-  CREATE TABLE IF NOT EXISTS etudiants (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    lastname TEXT,
-    firstname TEXT
-  )
-`;
-db.run(createTableQuery);
-
-app.delete('/etudiant/:id', (req, res) => {
-  const studentId = req.params.id;
-  const sql = `DELETE FROM Etudiant WHERE id = ${studentId}`;
-
-  db.query(sql, (error, result) => {
-    if (error) {
-      console.error('Erreur lors de la suppression de l\'étudiant', error);
-      res.status(500).json({ error: 'Erreur interne du serveur' });
-    } else {
-      if (result.affectedRows > 0) {
-        res.json({ message: 'Étudiant supprimé avec succès' });
-      } else {
-        res.status(404).json({ error: 'Étudiant non trouvé' });
-      }
-    }
-  });
-});
-
+/* affichage de tout les etudiants*/
 app.get('/etudiants', (req, res) => {
-  const sql = 'SELECT * FROM etudiants';
-  db.all(sql, (error, rows) => {
-    if (error) {
-      console.error('Error fetching data', error);
-      res.status(500).send('Error fetching data');
-    } else {
-      res.json(rows);
-    }
+  etudiants.findAll().then((etudiants) => {
+    res.json(etudiants);
   });
 });
-
+/**order croissant  */
+app.get('/etudiants', (req, res) => {
+  etudiants.findAll({
+    order: [['id', 'DESC']] /*[, pour un autre champs ] */
+  })
+  .then((etudiants) => {
+    res.json(etudiants);
+  })
+  /*affichage les etudiants by id  */
 app.get('/etudiants/:id', (req, res) => {
-  const id = req.params.id;
-  const sql = 'SELECT * FROM etudiants WHERE id = ?';
-  db.get(sql, [id], (error, row) => {
-    if (error) {
-      console.error('Error fetching data', error);
-      res.status(500).send('Error fetching data');
-    } else {
-      if (!row) {
-        res.json({ lastname: "Etudiant n'existe pas" });
-      } else {
-        res.json(row);
+  const etudiantsId = req.params.id;
+  etudiants.findByPk(etudiantsId).then((etudiants) => {
+    res.json(etudiants);
+  });
+});
+//* recherche avance 
+app.get('/recherchea/:lastname/:firstname', (req, res) => {
+  const lastname = req.params.lastname;
+  const firstname = req.params.firstname;
+
+  etudiants.findAll({
+    where: {
+      lastname: {
+        [Sequelize.Op.like]: `%${lastname}%`
+      },
+      firstname: {
+        [Sequelize.Op.like]: `%${firstname}%`
       }
     }
+  })
+  .then((etudiants) => {
+    res.json(etudiants);
+  })
+app.post('/etudiants', (req, res) => {
+  const { lastname, firstname, ville } = req.body; 
+  etudiants.create({ lastname, firstname, ville }).then((etudiants) => {
+    res.json(etudiants);
+  });
+});
+/*mise jour*/
+app.put('/etudiants/:id', (req, res) => {
+  const etudiantsId = req.params.id;
+  const { lastname, firstname, ville } = req.body; 
+  etudiants.update({ lastname, firstname, ville }, { where: { id: etudiantsId } }).then(() => {
+    res.json({ message: 'Étudiant mis à jour avec succès' });
   });
 });
 
-app.get('/recherchea/:lastname /:ville', (req, res) => {
-  const nom = req.params.nom;
-  const ville = req.params.ville;
-  const sql = 'SELECT * FROM etudiants WHERE nom LIKE ? AND ville LIKE ?';
-  db.all(sql, [`%${lastname}%`, `%${ville}%`], (error, rows) => {
-    if (error) {
-      console.error('Error fetching data', error);
-      res.status(500).send('Error fetching data');
-    } else {
-      res.json(rows);
-    }
+app.delete('/etudiants/:id', (req, res) => {
+  const etudiantsId = req.params.id;
+  etudiants.destroy({ where: { id: etudiantsId } }).then(() => {
+    res.json({ message: 'Étudiant supprimé avec succès' });
   });
 });
 
-app.put('/etudiant/:id', (req, res) => {
-  const updatedStudent = req.body;
-  const sql = `UPDATE Etudiant SET
-    nom = '${updatedStudent.lastname}',
-    prenom = '${updatedStudent.firstname}'
-    WHERE id_etudiant = ${updatedStudent.id}`;
-
-  db.query(sql, (error, result) => {
-    if (error) {
-      console.error('Error updating data', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.json({ message: 'L\'étudiant a été mis à jour avec succès' });
-    }
-  });
-});
-app.delete('/etudiant/:id', (req, res) => {
-  const studentId = req.params.id;
-  const sql = `DELETE FROM Etudiant WHERE id = ${studentId}`;
-
-  db.query(sql, (error, result) => {
-    if (error) {
-      console.error('Erreur lors de la suppression de l\'étudiant', error);
-      res.status(500).json({ error: 'Erreur interne du serveur' });
-    } else {
-      if (result.affectedRows > 0) {
-        res.json({ message: 'Étudiant supprimé avec succès' });
-      } else {
-        res.status(404).json({ error: 'Étudiant non trouvé' });
-      }
-    }
-  });
-});
-app.post('/etudiant', (req, res) => {
-  const newStudent = req.body;
-  const sql = `INSERT INTO Etudiant (nom, prenom) VALUES
-    ('${newStudent.firstname}', '${newStudent.lastname}')`;
-
-  db.query(sql, (error, result) => {
-    if (error) {
-      console.error('Error adding new student', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    } else {
-      res.json({ message: 'Nouvel étudiant ajouté avec succès' });
-    }
-  });
-});
-
-app.get('/etudiants/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const etudiant = await getEtudiantById(id);
-    res.json(etudiant);
-  } catch (error) {
-    console.error('Erreur lors de la récupération des données de l\'étudiant:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
-
+const port = 3001;
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Serveur en cours d'exécution sur le port ${port}`);
 });
+
